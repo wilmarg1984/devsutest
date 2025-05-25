@@ -1,0 +1,9 @@
+FROM postgres:12-alpine
+
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+
+COPY BaseDatos.sql /docker-entrypoint-initdb.d/
+
+# Asegurar permisos correctos
+RUN chmod 755 /docker-entrypoint-initdb.d/BaseDatos.sql 

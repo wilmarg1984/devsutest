@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres-db:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - devsu-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devsutest"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
+  customer-service:
+    build:
+      context: ./customer-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - devsu-network
+
+  account-service:
+    build:
+      context: ./account-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - devsu-network
+
+networks:
+  devsu-network:
+    driver: bridge
+
+volumes:
+  postgres_data: 
